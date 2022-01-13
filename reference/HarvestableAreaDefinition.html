@@ -44,7 +44,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Harvestable area definition</h1>
-      <small class="dont-index">Source: <a href="https://github.com/VincyaneBadouard/Maria/blob/HEAD/R/harvestableareadefinition.R" class="external-link"><code>R/harvestableareadefinition.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/VincyaneBadouard/Maria/blob/HEAD/R/HarvestableAreaDefinition.R" class="external-link"><code>R/HarvestableAreaDefinition.R</code></a></small>
       <div class="d-none name"><code>HarvestableAreaDefinition.Rd</code></div>
     </div>
 
@@ -56,7 +56,7 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">harvestableareadefinition</span><span class="op">(</span>
   <span class="va">topography</span>,
-  <span class="va">verticalcreekheight</span>,
+  <span class="va">creekdistances</span>,
   advancedloggingparameters <span class="op">=</span> <span class="fu"><a href="loggingparameters.html">loggingparameters</a></span><span class="op">(</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -66,9 +66,9 @@
     <dl><dt>topography</dt>
 <dd><p>Digital terrain model (DTM) of the inventoried plot (LiDAR
 or SRTM) (<code><a href="DTMParacou.html">DTMParacou</a></code>) (RasterLayer)</p></dd>
-<dt>verticalcreekheight</dt>
-<dd><p>Relative elevation from nearest channel network
-(Large RasterLayer)</p></dd>
+<dt>creekdistances</dt>
+<dd><p>Relative distances (vertical and horizontal) from nearest channel network
+(list of 2 large RasterLayers)</p></dd>
 <dt>advancedloggingparameters</dt>
 <dd><p>Other parameters of the logging simulator
 <code><a href="loggingparameters.html">loggingparameters</a></code> (list)</p></dd>
@@ -88,11 +88,11 @@ plot (Large RasterLayer)</p></li>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">PlotMask</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">DTMParacou</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">VerticalCreekHeight</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">creekdistances</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="va">HarvestableAreaOutputs</span> <span class="op">&lt;-</span> <span class="fu">harvestableareadefinition</span><span class="op">(</span></span>
 <span class="r-in">  topography <span class="op">=</span> <span class="va">DTMParacou</span>,</span>
-<span class="r-in">  verticalcreekheight <span class="op">=</span> <span class="va">VerticalCreekHeight</span>,</span>
+<span class="r-in">  creekdistances <span class="op">=</span> <span class="va">creekdistances</span>,</span>
 <span class="r-in">  advancedloggingparameters <span class="op">=</span> <span class="fu"><a href="loggingparameters.html">loggingparameters</a></span><span class="op">(</span><span class="op">)</span></span>
 <span class="r-in">  <span class="op">)</span></span>
 <span class="r-in"></span>
