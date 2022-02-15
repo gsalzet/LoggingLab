@@ -31,10 +31,13 @@
     <loc>/reference/ForestZoneVolumeParametersTable.html</loc>
   </url>
   <url>
-    <loc>/reference/HarvestablePolygons.html</loc>
+    <loc>/reference/HarvestableAreaOutputsCable.html</loc>
   </url>
   <url>
     <loc>/reference/LoggingSimulationOutputs.html</loc>
+  </url>
+  <url>
+    <loc>/reference/LoggingSimulationOutputs_iter.html</loc>
   </url>
   <url>
     <loc>/reference/MainTrails.html</loc>
@@ -52,10 +55,10 @@
     <loc>/reference/PlotMask.html</loc>
   </url>
   <url>
-    <loc>/reference/PlotSlope.html</loc>
+    <loc>/reference/ScenariosTable.html</loc>
   </url>
   <url>
-    <loc>/reference/ScenariosTable.html</loc>
+    <loc>/reference/SecondaryTrails.html</loc>
   </url>
   <url>
     <loc>/reference/SpeciesCriteria.html</loc>
@@ -65,6 +68,9 @@
   </url>
   <url>
     <loc>/reference/addtreedim.html</loc>
+  </url>
+  <url>
+    <loc>/reference/adjtopolcp.html</loc>
   </url>
   <url>
     <loc>/reference/cleaninventory.html</loc>
@@ -94,6 +100,9 @@
     <loc>/reference/harvestable.html</loc>
   </url>
   <url>
+    <loc>/reference/harvestableareadefinition.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
   </url>
   <url>
@@ -115,6 +124,9 @@
     <loc>/reference/loggingsummary1.html</loc>
   </url>
   <url>
+    <loc>/reference/maintrailextract.html</loc>
+  </url>
+  <url>
     <loc>/reference/pipe.html</loc>
   </url>
   <url>
@@ -133,7 +145,13 @@
     <loc>/reference/selected.html</loc>
   </url>
   <url>
+    <loc>/reference/sloperdcond.html</loc>
+  </url>
+  <url>
     <loc>/reference/smoothtrails.html</loc>
+  </url>
+  <url>
+    <loc>/reference/st_temporaryintersection.html</loc>
   </url>
   <url>
     <loc>/reference/timberharvestedvolume.html</loc>
