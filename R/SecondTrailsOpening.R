@@ -1287,14 +1287,26 @@ secondtrailsopening <- function(
 
 
 
+
+
         for (j in 1:dim(TreePts)[1]) {
           TreePts$Logged[j] <- any(PointTreeWIP$origins[[1]] %in% TreePts$idTree[j])
         }
 
+        if (length(Lines)>0) {
+          WIP_lines <- as.data.frame(do.call(rbind, Lines)) %>%
+            unnest(cols = c(LineID, LoggedTrees, TypeExpl, IdMachineZone)) #  unnesting flattens it back out into regular columns
 
-        TreePts <- TreePts %>%
-          filter(Logged == FALSE)%>%
-          dplyr::select(-Logged)
+          TreePts <- TreePts %>%
+            filter(Logged == FALSE & !(idTree %in% WIP_lines$LoggedTrees))%>%
+            dplyr::select(-Logged)
+        }else{
+          TreePts <- TreePts %>%
+            filter(Logged == FALSE)%>%
+            dplyr::select(-Logged)
+        }
+
+
 
         if (dim(TreePts)[1]> 0) {
 

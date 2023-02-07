@@ -1526,9 +1526,18 @@ secondtrailsadjusted <- function(
             }
 
 
-            TreePts <- TreePts %>%
-              filter(Logged == FALSE)%>%
-              dplyr::select(-Logged)
+            if (length(Lines)>0) {
+              WIP_lines <- as.data.frame(do.call(rbind, Lines)) %>%
+                unnest(cols = c(LineID, LoggedTrees, TypeExpl, IdMachineZone)) #  unnesting flattens it back out into regular columns
+
+              TreePts <- TreePts %>%
+                filter(Logged == FALSE & !(idTree %in% WIP_lines$LoggedTrees))%>%
+                dplyr::select(-Logged)
+            }else{
+              TreePts <- TreePts %>%
+                filter(Logged == FALSE)%>%
+                dplyr::select(-Logged)
+            }
 
             if (dim(TreePts)[1]> 0) {
 
