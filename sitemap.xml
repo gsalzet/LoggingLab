@@ -4,10 +4,7 @@
     <loc>/404.html</loc>
   </url>
   <url>
-    <loc>/ToDo.html</loc>
-  </url>
-  <url>
-    <loc>/articles/CreekDistancesRmd.html</loc>
+    <loc>/articles/CreekDistances.html</loc>
   </url>
   <url>
     <loc>/articles/LoggingLab.html</loc>
@@ -88,9 +85,6 @@
     <loc>/reference/directionalfellingsuccessdef.html</loc>
   </url>
   <url>
-    <loc>/reference/exploitablefuelwoodvolume.html</loc>
-  </url>
-  <url>
     <loc>/reference/felling1tree.html</loc>
   </url>
   <url>
@@ -103,10 +97,16 @@
     <loc>/reference/getgeometry.html</loc>
   </url>
   <url>
+    <loc>/reference/getmask.html</loc>
+  </url>
+  <url>
     <loc>/reference/harvestable.html</loc>
   </url>
   <url>
     <loc>/reference/harvestableareadefinition.html</loc>
+  </url>
+  <url>
+    <loc>/reference/harvestablefuelwood.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>
@@ -131,6 +131,9 @@
   </url>
   <url>
     <loc>/reference/maintrailextract.html</loc>
+  </url>
+  <url>
+    <loc>/reference/mortalityunderpolygon.html</loc>
   </url>
   <url>
     <loc>/reference/pipe.html</loc>
