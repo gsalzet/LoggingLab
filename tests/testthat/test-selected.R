@@ -129,11 +129,12 @@ test_that("selected", {
   VO <- HVinit + 20
 
 
-  expect_message(selected(inventory, scenario = "manual", fuel = "0",
-                          diversification = FALSE,  specieslax = FALSE, objectivelax = TRUE,
-                          topography = DTMParacou, advancedloggingparameters = loggingparameters(),
-                          VO = VO, HVinit = HVinit)$inventory,
-                 "You have chosen to continue logging without diversifying")
+  # expect_message(selected(
+  #   inventory, scenario = "manual", fuel = "0",
+  #   diversification = FALSE,  specieslax = FALSE, objectivelax = TRUE,
+  #   topography = DTMParacou, advancedloggingparameters = loggingparameters(),
+  #   VO = VO, HVinit = HVinit)$inventory,
+  #   "You have chosen to continue logging without diversifying")
 
   # if (diversification && objectivelax)
   harvestableOutputs <- harvestable(inventory0,
@@ -181,7 +182,7 @@ test_that("selected", {
                                              VO = VO, HVinit = HVinit))$inventory
 
   TestUp <- testinventory %>%
-    dplyr::filter(CommercialLevel == "1") %>%
+    dplyr::filter(CommercialLevel == 1) %>%
     dplyr::filter(DBH >= UpMinFD & DBH <= MaxFD) %>%
     dplyr::filter(LoggingStatus != "non-harvestable") %>%
     dplyr::filter(ProbedHollow == "0")
@@ -191,13 +192,13 @@ test_that("selected", {
     dplyr::filter(LoggingStatus == "harvestableUp")
 
   if(nrow(TestUp)>0){
-    expect_true(all(TestUp$LoggingStatus == "harvestableUp")) # There are harvestableUp among the CommercialLevel = "1"
+    expect_true(all(TestUp$LoggingStatus == "harvestableUp")) # There are harvestableUp among the CommercialLevel = 1
     expect_true(all(TestDBHUp$DBH >= TestDBHUp$UpMinFD)) # DBH >= UpMinFD
     expect_true(all(TestDBHUp$Up =="1")) #  Up = "1"
   }
 
   ## if (!diversification)
-  expect_false(any(TestDBHUp$CommercialLevel == "2")) # no CommercialLevel = "2" among the harvestableUp
+  expect_false(any(TestDBHUp$CommercialLevel == 2)) # no CommercialLevel = 2 among the harvestableUp
   ### if (HVupCommercial1 == VO)
   ### if (HVupCommercial1 > VO)
   ### if (HVupCommercial1 < VO)

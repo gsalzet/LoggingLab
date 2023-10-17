@@ -112,7 +112,7 @@
 #'@param iter Number of iterations (numeric). Default = 1.
 #'@param cores Number of cores for parallelization (numeric). Default = 1.
 #'
-#'@return A large list of 39  elements for each iteration, contained in a list.
+#'@return A large list of 40  elements for each iteration, contained in a list.
 #'  Input inventory (data.frame) with logging informations (list) (see the
 #'  outputs metadata in the vignette or
 #'  \code{\link{LoggingSimulationOutputs_iter}}).
@@ -140,7 +140,7 @@
 #'
 #'@export
 #'
-#'@importFrom parallel makePSOCKcluster clusterExport parLapply stopCluster
+#'@importFrom parallel makePSOCKcluster clusterExport parLapply stopCluster detectCores
 #'@importFrom doSNOW registerDoSNOW
 #'@importFrom foreach foreach %dopar%
 #'@importFrom utils setTxtProgressBar txtProgressBar
@@ -155,7 +155,7 @@
 #' data(ForestZoneVolumeParametersTable) # volume parameters
 #' data(ParamCrownDiameterAllometry) # parameters values of the crown diameter allometry
 #'
-#' Rslt <- loggingsimulation(
+#' LoggingSimulationOutputs_iter <- loggingsimulation(
 #'  Paracou6_2016, plotmask = PlotMask, topography = DTMParacou,
 #'  creekverticaldistance = CreekDistances$distvert,
 #'  creekhorizontaldistance = CreekDistances$disthorz,
@@ -204,6 +204,9 @@ loggingsimulation <- function(
   # Check args
   if(!all(unlist(lapply(list(iter, cores), inherits, "numeric"))))
     stop("The 'iter' and 'cores' arguments of the 'loggingsimulation' function must be numeric")
+  if(cores > max(detectCores()-1,1) ){
+    stop("Requested core number is over the total available core number - 1. Please reduce requested core number.")
+  }
 
   # Global variables
   j <- ParamCrownDiameterAllometry <- NULL

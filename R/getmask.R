@@ -16,7 +16,7 @@
 #'
 #' @export
 #'
-#' @importFrom dplyr select filter summarise
+#' @importFrom dplyr select filter summarise mutate row_number
 #' @importFrom sf st_as_sf st_set_crs st_crs st_cast st_convex_hull
 #'   as_Spatial
 #' @importFrom raster extract raster
@@ -66,6 +66,7 @@ getmask <- function(
     summarise() %>%
     st_cast("POLYGON") %>%
     st_convex_hull() %>%
+    mutate(ID = row_number()) %>%
     as_Spatial()
 
   return(mask)

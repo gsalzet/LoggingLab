@@ -96,14 +96,17 @@
 #'   rasterToPoints rasterToPolygons rasterFromXYZ aggregate values ncell
 #'   values<- adjacent resample ncol
 #'
+#' @importFrom dplyr select filter mutate
 #' @importFrom tidyr unnest
 #' @importFrom tibble add_column
 #' @importFrom sp proj4string<- coordinates<-
-#' @importFrom lwgeom  st_snap_to_grid
+#' @importFrom sf st_as_sf st_union st_distance st_crs
+#' @importFrom lwgeom st_snap_to_grid
 #' @importFrom smoothr smooth
 #' @importFrom gdistance transition geoCorrection
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @importFrom stats na.exclude
+#' @importFrom raster "crs<-" crs
 #'
 #' @export
 #'
@@ -341,15 +344,16 @@ secondtrailsopening <- function(
 
     PartMainTrails <- st_intersection(st_geometry(maintrailsRed),
                                       st_geometry(AccessMainTrails)) %>%
-      st_union(by_feature = T) %>% st_as_sf() %>% filter(
-        st_geometry_type(.) %in% c("POLYGON","MULTIPOLYGON") ) %>%
+      st_union(by_feature = T) %>% st_as_sf() %>%
+      filter(st_geometry_type(.) %in% c("POLYGON","MULTIPOLYGON") ) %>%
       st_cast("MULTIPOLYGON", warn = FALSE)  %>% # "In st_cast.MULTIPOLYGON(X[[i]], ...) : polygon from first part only"
       st_as_sf() %>%
       st_set_agr(value = "constant") %>%
       st_join(AccessMainTrails)%>%
       st_make_valid()
 
-    PartMainTrails <- PartMainTrails %>% arrange(desc(st_area(PartMainTrails))) %>%
+    PartMainTrails <- PartMainTrails %>%
+      arrange(desc(st_area(PartMainTrails))) %>%
       filter(duplicated(PartMainTrails$ID) == FALSE)
 
     AccessPointAll <- maintrailsaccess
@@ -581,10 +585,13 @@ secondtrailsopening <- function(
               mutate(ID_Acc = ID) %>% dplyr::select(-ID)) %>%
     dplyr::select(ID,ID_Acc,type,idTree)
 
-  ptsAllNA <- ptsAllinit %>% filter(is.na(ID_Acc)) %>%
-    mutate(ID_Acc = AccessMainTrails$ID[c(max.col(-st_distance(ptsAllinit %>% filter(is.na(ID_Acc)),AccessMainTrails)))])
+  ptsAllNA <- ptsAllinit %>%
+    filter(is.na(ID_Acc)) %>%
+    mutate(ID_Acc = AccessMainTrails$ID[c(max.col(-st_distance(ptsAllinit %>%
+                                                                 filter(is.na(ID_Acc)),AccessMainTrails)))])
 
-  ptsAllNotNA <- ptsAllinit %>% filter(!is.na(ID_Acc))
+  ptsAllNotNA <- ptsAllinit %>%
+    filter(!is.na(ID_Acc))
   ptsAll <- rbind(ptsAllNotNA,ptsAllNA)
 
   # Reassign Selected Tree values (= BigTrees) to the aggregated Cost raster
@@ -635,8 +642,13 @@ secondtrailsopening <- function(
   for(ID_Access in unique(ptsAll$ID_Acc)) { # ici
 
     winching <- WinchingInit
-    pts <- ptsAll %>% filter(ID_Acc == ID_Access) %>% dplyr::mutate(ID = ID_Access) %>%  dplyr::select(-ID_Acc) %>% dplyr::distinct()
-    AccessPoint <- AccessPointAll %>% filter(ID == ID_Access)
+    pts <- ptsAll %>%
+      filter(ID_Acc == ID_Access) %>% dplyr::mutate(ID = ID_Access) %>%
+      dplyr::select(-ID_Acc) %>%
+      dplyr::distinct()
+
+    AccessPoint <- AccessPointAll %>%
+      filter(ID == ID_Access)
 
     pathLinesWIP <- c()
 
@@ -681,6 +693,7 @@ secondtrailsopening <- function(
       #Attribute a least cost point access to each points
       PointTree <- pts %>% filter(type == "Tree") %>%
         mutate(ptAcc = max.col(-CostDistEst))
+
       PointTree$ID <- as.factor(PointTree$ptAcc)
       levels(PointTree$ID) <- as.character(AccessPoint$ID)
 
@@ -788,10 +801,12 @@ secondtrailsopening <- function(
 
 
         for (h in 1:dim(ptsGrpl)[1]) {
-          if (ptsGrpl[h,] %>% st_intersects(AccessMainTrails %>% filter(ID == ID_Access),sparse = FALSE) == FALSE) {
+          if (ptsGrpl[h,] %>% st_intersects(AccessMainTrails %>%
+                                            filter(ID == ID_Access),sparse = FALSE) == FALSE) {
             ptsGrpl$isEmpty[h] <- TRUE
           }else{
-            suppressWarnings(st_geometry(ptsGrpl[h,]) <- st_geometry(ptsGrpl[h,] %>% st_intersection(AccessMainTrails %>% filter(ID == ID_Access))))
+            suppressWarnings(st_geometry(ptsGrpl[h,]) <- st_geometry(ptsGrpl[h,] %>% st_intersection(AccessMainTrails %>%
+                                                                                                       filter(ID == ID_Access))))
           }
 
         }
@@ -800,7 +815,9 @@ secondtrailsopening <- function(
 
         ptsGrpl<- st_set_crs(ptsGrpl,st_crs(AccessPolygons)) # set crs from AccessPolygons
 
-        ptsGrpl <- ptsGrpl %>% filter(isEmpty == FALSE) %>% dplyr::select(-isEmpty) %>%
+        ptsGrpl <- ptsGrpl %>%
+          filter(isEmpty == FALSE) %>%
+          dplyr::select(-isEmpty) %>%
           mutate(IDpts = paste0("I.", row_number()))
 
         ptsWIP <- ptsGrpl %>% #def Grpl point as WIP point
@@ -833,10 +850,13 @@ secondtrailsopening <- function(
 
 
         for (h in 1:dim(ptsCbl)[1]) {
-          if (ptsCbl[h,] %>% st_intersects(AccessMainTrails %>% filter(ID == ID_Access),sparse = FALSE) == FALSE) {
+          if (ptsCbl[h,] %>% st_intersects(AccessMainTrails %>%
+                                           filter(ID == ID_Access),sparse = FALSE) == FALSE) {
             ptsCbl$isEmpty[h] <- TRUE
           }else{
-            suppressWarnings(st_geometry(ptsCbl[h,]) <- st_geometry(ptsCbl[h,] %>% st_intersection(AccessMainTrails %>% filter(ID == ID_Access))))
+            suppressWarnings(st_geometry(ptsCbl[h,]) <- st_geometry(ptsCbl[h,] %>%
+                                                                      st_intersection(AccessMainTrails %>%
+                                                                                        filter(ID == ID_Access))))
           }
 
         }
@@ -891,16 +911,20 @@ secondtrailsopening <- function(
 
 
         for (h in 1:dim(ptsCbl)[1]) {
-          if (st_geometry(ptsCbl[h,]) %>% st_intersects(AccessMainTrails %>% filter(ID == ID_Access),sparse = FALSE) == FALSE) {
+          if (st_geometry(ptsCbl[h,]) %>% st_intersects(AccessMainTrails %>%
+                                                        filter(ID == ID_Access),sparse = FALSE) == FALSE) {
             ptsCbl$isEmpty[h] <- TRUE
           }else{
-            suppressWarnings(st_geometry(ptsCbl[h,]) <- st_geometry(ptsCbl[h,] %>% st_intersection(AccessMainTrails %>% filter(ID == ID_Access))))
+            suppressWarnings(st_geometry(ptsCbl[h,]) <- st_geometry(ptsCbl[h,] %>%
+                                                                      st_intersection(AccessMainTrails %>%
+                                                                                        filter(ID == ID_Access))))
             ptsCbl$isEmpty[h] <- FALSE
           }
         }
 
 
-        ptsWIP <-  ptsCbl %>% filter(isEmpty == FALSE) %>% dplyr::select(-isEmpty) %>%#def cbl point as WIP point
+        ptsWIP <-  ptsCbl %>% filter(isEmpty == FALSE) %>%
+          dplyr::select(-isEmpty) %>% #def cbl point as WIP point
           st_set_agr("constant") %>%
           st_centroid()
 
@@ -956,7 +980,8 @@ secondtrailsopening <- function(
 
 
         ptsWIPmax <- rbind(PointAcc,ptsWIP %>%
-                             filter(st_intersects(.,st_geometry(plotmask %>%  st_as_sf()),sparse = FALSE)) %>%
+                             filter(st_intersects(.,st_geometry(plotmask %>%
+                                                                  st_as_sf()),sparse = FALSE)) %>%
                              filter(n.overlaps == max(ptsWIP$n.overlaps))) %>%
           mutate(TypeAcc = NA) %>%
           mutate(EstCost = NA)  %>%
@@ -972,23 +997,33 @@ secondtrailsopening <- function(
 
         if (ki == 1 ) {
           if (winching == "2") {
-            ptsDirAcc <- ptsTreeWIP %>%  mutate(gprlAcc  = c(FALSE,as.numeric(st_distance(ptsTreeWIP)[2:dim(ptsTreeWIP)[1],1]) < advancedloggingparameters$GrappleLength)) %>%
-              filter(gprlAcc == TRUE | type == "Access") %>% dplyr::select(-gprlAcc)
+            ptsDirAcc <- ptsTreeWIP %>%
+              mutate(gprlAcc  = c(FALSE,as.numeric(st_distance(ptsTreeWIP)[2:dim(ptsTreeWIP)[1],1]) < advancedloggingparameters$GrappleLength)) %>%
+              filter(gprlAcc == TRUE | type == "Access") %>%
+              dplyr::select(-gprlAcc)
             TmpTypeAcc <- "Grpl"
 
           }else{
-            ptsDirAcc <- ptsTreeWIP %>%  mutate(cblAcc  = c(FALSE,as.numeric(st_distance(ptsTreeWIP)[2:dim(ptsTreeWIP)[1],1]) < advancedloggingparameters$CableLength)) %>%
-              filter(cblAcc == TRUE | type == "Access") %>% dplyr::select(-cblAcc)
+            ptsDirAcc <- ptsTreeWIP %>%
+              mutate(cblAcc  = c(FALSE,as.numeric(st_distance(ptsTreeWIP)[2:dim(ptsTreeWIP)[1],1]) < advancedloggingparameters$CableLength)) %>%
+              filter(cblAcc == TRUE | type == "Access") %>%
+              dplyr::select(-cblAcc)
             TmpTypeAcc <- "Cbl"
           }
         }else{
 
 
           if (winching == "2") {
-            ptsDirAcc <- ptsTreeWIP %>%  mutate(gprlAcc  = c(FALSE,as.numeric(st_distance(ptsTreeWIP,st_union(pathsWIP %>%  st_buffer(dist = advancedloggingparameters$MaxMainTrailWidth/2)  %>% st_make_valid() %>%
-                                                                                                                st_union(),PointAcc %>% st_buffer(dist = advancedloggingparameters$MaxMainTrailWidth/2)  %>% st_make_valid() %>%
-                                                                                                                st_union()))[2:dim(ptsTreeWIP)[1],1]) < advancedloggingparameters$GrappleLength)) %>%
-              filter(gprlAcc == TRUE | type == "Access") %>% dplyr::select(-gprlAcc)
+            ptsDirAcc <- ptsTreeWIP %>%
+              mutate(gprlAcc  = c(FALSE,as.numeric(st_distance(ptsTreeWIP,st_union(pathsWIP %>%
+                                                                                     st_buffer(dist = advancedloggingparameters$MaxMainTrailWidth/2) %>%
+                                                                                     st_make_valid() %>%
+                                                                                     st_union(),PointAcc %>%
+                                                                                     st_buffer(dist = advancedloggingparameters$MaxMainTrailWidth/2) %>%
+                                                                                     st_make_valid() %>%
+                                                                                     st_union()))[2:dim(ptsTreeWIP)[1],1]) < advancedloggingparameters$GrappleLength)) %>%
+              filter(gprlAcc == TRUE | type == "Access") %>%
+              dplyr::select(-gprlAcc)
 
             TmpTypeAcc <- "Grpl"
 
@@ -1153,7 +1188,9 @@ secondtrailsopening <- function(
           # TmpPtsWIP <- st_set_crs(TmpPtsWIP,st_crs(ptsCbl)) # set crs from ptsCbl
 
           TmpPtsWIP <- TmpPtsWIP %>%
-            filter(st_intersects(st_geometry(TmpPtsWIP),st_geometry(AccessPolygons %>% st_union()),sparse = FALSE))
+            filter(st_intersects(
+              st_geometry(TmpPtsWIP),st_geometry(AccessPolygons %>%
+                                                   st_union()),sparse = FALSE))
 
 
           #Reconstruct access points + selected points
@@ -1186,7 +1223,8 @@ secondtrailsopening <- function(
 
 
 
-          TmpPtsWIP <- rbind(TmpPtsWIP %>% filter(type == "Access") %>% mutate(EstCost = NA),PointTreeWIP[1,])
+          TmpPtsWIP <- rbind(TmpPtsWIP %>% filter(type == "Access") %>%
+                               mutate(EstCost = NA),PointTreeWIP[1,])
 
           TmpPathWIP <- adjtopolcp(costSurface = CondSurf,topography = DTMmean , pts = TmpPtsWIP %>% as_Spatial(),
                                    slopeRdCond = SlopeCondRd,paths = FALSE)
@@ -1253,10 +1291,10 @@ secondtrailsopening <- function(
           pathsWIP <- do.call(rbind, pathLinesWIP)
 
 
-          pathsWIP <- pathsWIP %>% st_as_sf() %>% st_make_valid() %>% filter(!st_is_empty(pathsWIP %>%
-                                                                                            st_as_sf())) %>% filter(
-                                                                                              st_geometry_type(.)
-                                                                                              %in% c("LINESTRING") )
+          pathsWIP <- pathsWIP %>% st_as_sf() %>% st_make_valid() %>%
+            filter(!st_is_empty(pathsWIP %>%
+                                  st_as_sf())) %>%
+            filter(st_geometry_type(.) %in% c("LINESTRING"))
 
 
           if(dim(pathsWIP)[1]>0){
@@ -1313,8 +1351,6 @@ secondtrailsopening <- function(
             dplyr::select(-Logged)
         }
 
-
-
         if (dim(TreePts)[1]> 0) {
 
 
@@ -1343,10 +1379,14 @@ secondtrailsopening <- function(
 
 
             for (h in 1:dim(ptsGrpl)[1]) {
-              if (ptsGrpl[h,] %>% st_intersects(AccessMainTrails %>% filter(ID == ID_Access),sparse = FALSE) == FALSE) {
+              if (ptsGrpl[h,] %>%
+                  st_intersects(AccessMainTrails %>%
+                                filter(ID == ID_Access),sparse = FALSE) == FALSE) {
                 ptsGrpl$isEmpty[h] <- TRUE
               }else{
-                suppressWarnings(st_geometry(ptsGrpl[h,]) <- st_geometry(ptsGrpl[h,] %>% st_intersection(AccessMainTrails %>% filter(ID == ID_Access))))
+                suppressWarnings(st_geometry(ptsGrpl[h,]) <- st_geometry(ptsGrpl[h,] %>%
+                                                                           st_intersection(AccessMainTrails %>%
+                                                                                             filter(ID == ID_Access))))
               }
 
             }
@@ -1355,7 +1395,9 @@ secondtrailsopening <- function(
 
             ptsGrpl<- st_set_crs(ptsGrpl,st_crs(AccessPolygons)) # set crs from AccessPolygons
 
-            ptsGrpl <- ptsGrpl %>% filter(isEmpty == FALSE) %>% dplyr::select(-isEmpty) %>%
+            ptsGrpl <- ptsGrpl %>%
+              filter(isEmpty == FALSE) %>%
+              dplyr::select(-isEmpty) %>%
               mutate(IDpts = paste0("I.", row_number()))
 
             ptsWIP <- ptsGrpl %>% #def Grpl point as WIP point
@@ -1389,10 +1431,15 @@ secondtrailsopening <- function(
 
 
             for (h in 1:dim(ptsCbl)[1]) {
-              if (ptsCbl[h,] %>% st_intersects(st_geometry(AccessMainTrails %>% filter(ID == ID_Access) %>% st_union()),sparse = FALSE) == FALSE) {
+              if (ptsCbl[h,] %>%
+                  st_intersects(st_geometry(AccessMainTrails %>%
+                                            filter(ID == ID_Access) %>%
+                                            st_union()),sparse = FALSE) == FALSE) {
                 ptsCbl$isEmpty[h] <- TRUE
               }else{
-                suppressWarnings(st_geometry(ptsCbl[h,]) <- st_geometry(ptsCbl[h,] %>% st_intersection(st_geometry(AccessMainTrails %>% filter(ID == ID_Access)))))
+                suppressWarnings(st_geometry(ptsCbl[h,]) <- st_geometry(ptsCbl[h,] %>%
+                                                                          st_intersection(st_geometry(AccessMainTrails %>%
+                                                                                                        filter(ID == ID_Access)))))
               }
 
             }
@@ -1400,7 +1447,9 @@ secondtrailsopening <- function(
 
             ptsCbl <- st_set_crs(ptsCbl,st_crs(AccessPolygons)) #set crs from AccessPolygons
 
-            ptsCbl <- ptsCbl %>% filter(isEmpty == FALSE) %>% dplyr::select(-isEmpty) %>%
+            ptsCbl <- ptsCbl %>%
+              filter(isEmpty == FALSE) %>%
+              dplyr::select(-isEmpty) %>%
               mutate(IDpts = paste0("I.",row_number())) #Filter polygons which intersect accessible area to second trails
 
 
@@ -1444,17 +1493,23 @@ secondtrailsopening <- function(
 
 
             for (h in 1:dim(ptsCbl)[1]) {
-              if (ptsCbl[h,] %>% st_intersects(AccessMainTrails %>% filter(ID == ID_Access),sparse = FALSE) == FALSE) {
+              if (ptsCbl[h,] %>%
+                  st_intersects(AccessMainTrails %>%
+                                filter(ID == ID_Access),sparse = FALSE) == FALSE) {
                 ptsCbl$isEmpty[h] <- TRUE
               }else{
-                suppressWarnings(st_geometry(ptsCbl[h,]) <- st_geometry(ptsCbl[h,] %>% st_intersection(AccessMainTrails %>% filter(ID == ID_Access))))
+                suppressWarnings(st_geometry(ptsCbl[h,]) <- st_geometry(ptsCbl[h,] %>%
+                                                                          st_intersection(AccessMainTrails %>%
+                                                                                            filter(ID == ID_Access))))
               }
 
             }
 
 
 
-            ptsWIP <-  ptsCbl %>% filter(isEmpty == FALSE) %>% dplyr::select(-isEmpty) %>%#def cbl point as WIP point
+            ptsWIP <-  ptsCbl %>%
+              filter(isEmpty == FALSE) %>%
+              dplyr::select(-isEmpty) %>%#def cbl point as WIP point
               st_set_agr("constant") %>%
               st_centroid()
 
@@ -1519,8 +1574,9 @@ secondtrailsopening <- function(
 
 
   paths <- do.call(rbind, pathLines)
-  paths <- paths %>% st_as_sf() %>% st_make_valid() %>% filter(!st_is_empty(paths %>% st_as_sf())) %>% filter(
-    st_geometry_type(.) %in% c("LINESTRING") )
+  paths <- paths %>% st_as_sf() %>% st_make_valid() %>%
+    filter(!st_is_empty(paths %>% st_as_sf())) %>%
+    filter(st_geometry_type(.) %in% c("LINESTRING"))
 
   if (dim(paths)[1]>0) {
 

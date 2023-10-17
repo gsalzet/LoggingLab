@@ -50,13 +50,16 @@ loggingsummary1 <- function(x
   cat('No hollow timber logged volume :', round(x$NoHollowTimberLoggedVolume, digits = 1), 'm3, ',
       round(x$NoHollowTimberLoggedVolume/HarvestableArea, digits = 1), 'm3/harvestable ha\n') # Logged volume (m3) (only healthy trees)
 
+  cat('Timber extracted volume (timber volume after purge :', round(x$TimberExtractedVolume, digits = 1), 'm3, ',
+      round(x$TimberExtractedVolume/HarvestableArea, digits = 1), 'm3/harvestable ha\n') # Logged volume (m3) (only healthy trees if fuel != "2", healthy + hollow trees if fuel = "2")
+
   cat('Fuel wood biomass :', round(x$FuelWoodBiomass, digits = 1), 'ton, ',
       round(x$FuelWoodBiomass/HarvestableArea, digits = 1), 'ton/harvestable ha\n')
 
   cat('Logging residual biomass :', round(x$LoggingResidualBiomass, digits = 1), 'ton, ',
       round(x$LoggingResidualBiomass/HarvestableArea, digits = 1), 'ton/harvestable ha\n')
 
-  cat('Lost biomass :', round(x$LostBiomass, digits = 1), 'ton\n') # Total lost biomass (ton)
+  cat('Total forest biomass lost :', round(x$LostBiomass, digits = 1), 'ton\n') # Total lost biomass (ton)
 
   cat('Trails density :', round(x$TrailsDensity, digits = 1), 'm/ha\n') # Trails density (m/ha) (Preliminary if fuel)
 
