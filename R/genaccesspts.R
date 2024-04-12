@@ -96,11 +96,21 @@ genaccesspts <- function(topography,
 
 
   # Generate point access in the intersections between accessible area and maintrails (ID = accessible area index)
-  AccessPointAll <- PartMainTrails %>%
-    st_sample(rep(1,dim(PartMainTrails)[1]) ,type = "random", by_polygon=TRUE) %>% as_Spatial() %>%
-    st_as_sf() %>%
-    mutate(idTree = NA) %>% st_join(PartMainTrails) %>%
-    st_make_valid()
+
+  if (dim(PartMainTrails)[1] > 1){
+    AccessPointAll <- PartMainTrails %>%
+      st_sample(rep(1,dim(PartMainTrails)[1]) ,type = "random", by_polygon=TRUE) %>% as_Spatial() %>%
+      st_as_sf() %>%
+      mutate(idTree = NA) %>% st_join(PartMainTrails) %>%
+      st_make_valid()
+  }else{
+    AccessPointAll <- PartMainTrails %>%
+      st_sample(1 ,type = "random") %>% as_Spatial() %>%
+      st_as_sf() %>%
+      mutate(idTree = NA) %>% st_join(PartMainTrails) %>%
+      st_make_valid()
+  }
+
 
   return(list("PartMainTrails" = PartMainTrails,
               "AccessPointAll" = AccessPointAll))

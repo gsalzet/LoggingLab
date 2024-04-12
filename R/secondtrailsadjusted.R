@@ -605,10 +605,15 @@ secondtrailsadjusted <- function(
                                     n = 8,
                                     dissolve = TRUE)
 
-    CostRasterMeanGrpl <- raster::rasterize(x = PolygonGrpl[PolygonGrpl$Harvestable == Inf,],
-                                            y = CostRasterMean ,
-                                            field = Inf,
-                                            update = TRUE)
+    if ((max(CostSlopeRasterGrpl$Harvestable) != 0 )) {
+      CostRasterMeanGrpl <- rasterize(x = PolygonGrpl[PolygonGrpl$Harvestable == Inf,],
+                                      y = CostRasterMean ,
+                                      field = Inf,
+                                      update = TRUE)
+    }else{
+      CostRasterMeanGrpl <- CostRasterMean
+
+    }
 
     CostRasterMeanGrpl <- raster::rasterize(x = as_Spatial(AccessPointAll %>% st_buffer(dist = advancedloggingparameters$ScndTrailWidth+2)),
                                             y = CostRasterMeanGrpl ,
@@ -845,6 +850,7 @@ secondtrailsadjusted <- function(
 
           #Store pathline
           pathLines[[k]] <- TmpPathWIP[[2]]
+          crs(pathLines[[k]]) <- crs(DTMmean)
           pathLines[[k]]@lines[[1]]@ID <- paste("Path", TmpPtsWIP$idTree[2], sep = ".")
 
           Lines[[k]] <- list("LineID" = k,"LoggedTrees" = TmpPtsWIP$idTree[2],"TypeExpl" = "FoT")
@@ -1442,6 +1448,7 @@ secondtrailsadjusted <- function(
               }
 
               pathLines[[k]] <- TmpPathWIP[[2]]
+              crs(pathLines[[k]]) <- crs(DTMmean)
               pathLines[[k]]@lines[[1]]@ID <- paste("Path",
                                                     "A",
                                                     LCPathWIP,
@@ -1465,7 +1472,7 @@ secondtrailsadjusted <- function(
 
 
               pathLinesWIP[[ki]] <- TmpPathWIP[[2]]
-
+              crs(pathLinesWIP[[ki]]) <-crs(DTMmean)
               pathLinesWIP[[ki]]@lines[[1]]@ID <- paste("Path",
                                                         "A",
                                                         LCPathWIP,
@@ -1528,9 +1535,18 @@ secondtrailsadjusted <- function(
             }
 
 
-            TreePts <- TreePts %>%
-              filter(Logged == FALSE)%>%
-              dplyr::select(-Logged)
+            if (length(Lines)>0) {
+              WIP_lines <- as.data.frame(do.call(rbind, Lines)) %>%
+                unnest(cols = c(LineID, LoggedTrees, TypeExpl, IdMachineZone)) #  unnesting flattens it back out into regular columns
+
+              TreePts <- TreePts %>%
+                filter(Logged == FALSE & !(idTree %in% WIP_lines$LoggedTrees))%>%
+                dplyr::select(-Logged)
+            }else{
+              TreePts <- TreePts %>%
+                filter(Logged == FALSE)%>%
+                dplyr::select(-Logged)
+            }
 
             if (dim(TreePts)[1]> 0) {
 

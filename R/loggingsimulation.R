@@ -140,7 +140,7 @@
 #'
 #'@export
 #'
-#'@importFrom parallel makePSOCKcluster clusterExport parLapply stopCluster
+#'@importFrom parallel makePSOCKcluster clusterExport parLapply stopCluster detectCores
 #'@importFrom doSNOW registerDoSNOW
 #'@importFrom foreach foreach %dopar%
 #'@importFrom utils setTxtProgressBar txtProgressBar
@@ -204,6 +204,9 @@ loggingsimulation <- function(
   # Check args
   if(!all(unlist(lapply(list(iter, cores), inherits, "numeric"))))
     stop("The 'iter' and 'cores' arguments of the 'loggingsimulation' function must be numeric")
+  if(cores > max(detectCores()-1,1) ){
+    stop("Requested core number is over the total available core number - 1. Please reduce requested core number.")
+  }
 
   # Global variables
   j <- ParamCrownDiameterAllometry <- NULL
